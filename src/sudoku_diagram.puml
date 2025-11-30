@@ -1,0 +1,94 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+' ========= Interfaces & Classes =========
+interface SudokuChecker {
+  +check(): void
+}
+
+class SudokuApp {
+  +main(args: String[]): void
+}
+
+class SudokuIO {
+  +loadBoardFromCsv(path: String): int[][]
+}
+
+class SudokuValidator {
+  -board: int[][]
+  -mode: int
+  -rowIssues: List<DuplicateRecord>
+  -colIssues: List<DuplicateRecord>
+  -boxIssues: List<DuplicateRecord>
+
+  +SudokuValidator(board: int[][], mode: int)
+  +validate(): boolean
+  +printReport(valid: boolean): void
+}
+
+class DuplicateRecord {
+  -type: String       ' "ROW", "COL", "BOX"
+  -index: int         ' 1..9
+  -digit: int         ' 1..9
+  -locations: List<int>
+
+  +DuplicateRecord(type: String, index: int, digit: int, locations: List<int>)
+  +getType(): String
+  +getIndex(): int
+  +getDigit(): int
+  +getLocations(): List<int>
+  +toString(): String
+}
+
+class CheckerFactory {
+  +createChecker(type: String, index: int, board: int[][]): SudokuChecker
+}
+
+class RowChecker {
+  -rowIndex: int
+  -board: int[][]
+  -duplicatePositions: Map<int, List<int>>
+
+  +RowChecker(rowIndex: int, board: int[][])
+  +check(): void
+  +getRowNumber(): int
+  +getDuplicatePositions(): Map<int, List<int>>
+}
+
+class ColumnChecker {
+  -colIndex: int
+  -board: int[][]
+  -duplicatePositions: Map<int, List<int>>
+
+  +ColumnChecker(colIndex: int, board: int[][])
+  +check(): void
+  +getColumnNumber(): int
+  +getDuplicatePositions(): Map<int, List<int>>
+}
+
+class BoxChecker {
+  -boxIndex: int
+  -board: int[][]
+  -duplicatePositions: Map<int, List<int>>
+
+  +BoxChecker(boxIndex: int, board: int[][])
+  +check(): void
+  +getBoxNumber(): int
+  +getDuplicatePositions(): Map<int, List<int>>
+}
+
+' ========= Relationships =========
+SudokuChecker <|.. RowChecker
+SudokuChecker <|.. ColumnChecker
+SudokuChecker <|.. BoxChecker
+
+SudokuApp --> SudokuIO : uses
+SudokuApp --> SudokuValidator : creates
+
+SudokuValidator --> CheckerFactory : uses
+SudokuValidator --> SudokuChecker : uses
+SudokuValidator "0..*" o-- DuplicateRecord
+
+CheckerFactory --> SudokuChecker : «creates»
+
+@enduml
