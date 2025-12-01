@@ -1,0 +1,41 @@
+@startuml
+participant "SudokuValidator" as Validator
+participant "CheckerFactory" as Factory
+collections "RowCheckers" as Rows
+collections "ColumnCheckers" as Cols
+collections "BoxCheckers" as Boxes
+collections "Threads" as Threads
+
+Validator -> Validator: validate() [mode = 27]
+
+loop i = 0..8
+    Validator -> Factory: createChecker("ROW", i, board)
+    Factory --> Validator: RowChecker
+    Validator -> Rows: add(RowChecker)
+
+    Validator -> Factory: createChecker("COL", i, board)
+    Factory --> Validator: ColumnChecker
+    Validator -> Cols: add(ColumnChecker)
+
+    Validator -> Factory: createChecker("BOX", i, board)
+    Factory --> Validator: BoxChecker
+    Validator -> Boxes: add(BoxChecker)
+end
+
+' create 27 threads
+loop for each checker
+    Validator -> Threads: new Thread(checker.check)
+end
+
+loop for each thread
+    Validator -> Threads: start()
+end
+
+loop for each thread
+    Validator -> Threads: join()
+end
+
+Validator -> Validator: collectAll()\n(rowIssues, colIssues, boxIssues)
+Validator --> "SudokuApp": valid / invalid result
+
+@enduml

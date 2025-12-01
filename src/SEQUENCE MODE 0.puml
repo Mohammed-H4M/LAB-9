@@ -1,0 +1,35 @@
+@startuml
+actor User
+participant "SudokuApp" as App
+participant "SudokuIO" as IO
+participant "SudokuValidator" as Validator
+participant "CheckerFactory" as Factory
+participant "RowChecker" as Row
+participant "ColumnChecker" as Col
+participant "BoxChecker" as Box
+
+User -> App: run with (file.csv, mode=0)
+App -> IO: loadBoardFromCsv("file.csv")
+IO --> App: board: int[][]
+
+App -> Validator: new SudokuValidator(board, 0)
+App -> Validator: validate()
+
+loop i = 0..8
+    Validator -> Factory: createChecker("ROW", i, board)
+    Factory --> Validator: RowChecker
+    Validator -> Row: check()
+
+    Validator -> Factory: createChecker("COL", i, board)
+    Factory --> Validator: ColumnChecker
+    Validator -> Col: check()
+
+    Validator -> Factory: createChecker("BOX", i, board)
+    Factory --> Validator: BoxChecker
+    Validator -> Box: check()
+end
+
+Validator --> App: valid: boolean
+App -> Validator: printReport(valid)
+Validator --> App: console output
+@enduml
